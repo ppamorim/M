@@ -1,6 +1,6 @@
 M
 =
 
-Media Player for Android and FirefoxOs, not for iOS. 
+Open Source Media Player for Android and FirefoxOS, not for iOS. 
 
 Why? We hate iOS.
