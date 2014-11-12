@@ -130,7 +130,9 @@ public class MusicService extends Service implements
 
     @Override
     public void onCompletion(MediaPlayer mediaPlayer) {
-
+        if(mProgressBarPlayer != null) {
+            mProgressBarPlayer.setProgress(0);
+        }
     }
 
     @Override
@@ -142,9 +144,13 @@ public class MusicService extends Service implements
     public void onPrepared(MediaPlayer mediaPlayer) {
         if(mediaPlayer != null && mProgressBarPlayer != null) {
             mediaPlayer.start();
-            mProgressBarPlayer.postDelayed(onEverySecond, 1000);
+            mProgressBarPlayer.setProgress(0);
+            mProgressBarPlayer.setMax(mPlayer.getDuration());
+            mProgressBarPlayer.postDelayed(onEverySecond, 500);
         }
     }
+
+
 
     private Runnable onEverySecond = new Runnable() {
         @Override
@@ -153,10 +159,16 @@ public class MusicService extends Service implements
                 if(mProgressBarPlayer != null) {
                     DebugUtil.log("position: " + mPlayer.getCurrentPosition());
                     mProgressBarPlayer.setProgress(mPlayer.getCurrentPosition());
+
                 }
 
                 if(mPlayer.isPlaying() && mProgressBarPlayer != null) {
-                    mProgressBarPlayer.postDelayed(onEverySecond, 1000);
+                    DebugUtil.log("Progress: " + mProgressBarPlayer.getProgress());
+                    if(mPlayer.getCurrentPosition() < mPlayer.getDuration()) {
+                        mProgressBarPlayer.postDelayed(onEverySecond, 500);
+                    } else {
+                        mProgressBarPlayer.setProgress(0);
+                    }
                 }
             }
         }

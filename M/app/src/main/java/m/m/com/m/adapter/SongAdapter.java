@@ -17,6 +17,7 @@
 package m.m.com.m.adapter;
 
 import android.content.Context;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,6 +25,7 @@ import android.view.ViewGroup;
 import android.webkit.URLUtil;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -132,8 +134,11 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
         }
 
         ViewGroup.LayoutParams layoutParams = viewHolder.itemView.getLayoutParams();
+        ViewGroup.LayoutParams layoutParamsProgressBar = viewHolder.progressBar.getLayoutParams();
         layoutParams.height = mScreenSize/2;
+        layoutParamsProgressBar.height = mScreenSize/2;
         viewHolder.itemView.setLayoutParams(layoutParams);
+        viewHolder.progressBar.setLayoutParams(layoutParamsProgressBar);
 
     }
 

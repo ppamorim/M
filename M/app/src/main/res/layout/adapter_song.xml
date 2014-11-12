@@ -43,6 +43,6 @@
         android:layout_height="match_parent"
         android:indeterminate="false"
         android:indeterminateOnly="false"
-        style="?android:attr/progressBarStyleHorizontal"/>
+        style="@style/CustomProgressBarHorizontal"/>
 
 </RelativeLayout>

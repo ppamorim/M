@@ -64,4 +64,10 @@
         <!--<item name="android:dropDownListViewStyle">@style/MyListViewStyle</item>-->
     </style>
 
+    <style name="CustomProgressBarHorizontal" parent="android:Widget.ProgressBar.Horizontal">
+        <item name="android:progressDrawable">@drawable/adapter_progressbar</item>
+        <item name="android:minHeight">100dip</item>
+        <item name="android:maxHeight">200dip</item>
+    </style>
+
 </resources>
