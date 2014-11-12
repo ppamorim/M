@@ -1,3 +1,19 @@
+/*
+* Copyright 2014 Pedro Paulo de Amorim
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+
 package m.m.com.m.adapter;
 
 import android.content.Context;
@@ -7,6 +23,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.URLUtil;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -57,7 +74,7 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
             viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    mOnItemClick.onItemClick(position);
+                    mOnItemClick.onItemClick(position, viewHolder.progressBar);
                 }
             });
 
@@ -133,6 +150,7 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
     public static class ViewHolder extends RecyclerView.ViewHolder {
         final public TextView title;
         final public ImageView image;
+        final public ProgressBar progressBar;
         final public String urlImage;
 
         public ViewHolder(View itemView) {
@@ -140,6 +158,7 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
 
             title = (TextView) itemView.findViewById(R.id.title);
             image = (ImageView) itemView.findViewById(R.id.image);
+            progressBar = (ProgressBar) itemView.findViewById(R.id.progress_bar);
             urlImage = null;
 
         }
@@ -147,7 +166,7 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
     }
 
     public static interface OnItemClick {
-        public void onItemClick(int position);
+        public void onItemClick(int position, ProgressBar progressBar);
     }
 
 }

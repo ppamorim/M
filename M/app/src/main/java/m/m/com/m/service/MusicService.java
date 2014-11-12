@@ -1,3 +1,19 @@
+/*
+* Copyright 2014 Pedro Paulo de Amorim
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+
 package m.m.com.m.service;
 
 import android.app.Service;
@@ -10,10 +26,12 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.util.Log;
+import android.widget.ProgressBar;
 
 import java.util.ArrayList;
 
 import m.m.com.m.model.Song;
+import m.m.com.m.utils.DebugUtil;
 
 public class MusicService extends Service implements
         MediaPlayer.OnPreparedListener, MediaPlayer.OnErrorListener,
@@ -24,6 +42,11 @@ public class MusicService extends Service implements
 
     private MediaPlayer mPlayer;
     private final IBinder musicBind = new MusicBinder();
+    private ProgressBar mProgressBarPlayer;
+
+    private int current = 0;
+    private boolean running = true;
+    private int duration = 0;
 
     public void onCreate() {
         super.onCreate();
@@ -53,6 +76,10 @@ public class MusicService extends Service implements
         public MusicService getService() {
             return MusicService.this;
         }
+    }
+
+    public void setSeekBar(ProgressBar progressBar) {
+        mProgressBarPlayer = progressBar;
     }
 
     //play a song
@@ -113,8 +140,26 @@ public class MusicService extends Service implements
 
     @Override
     public void onPrepared(MediaPlayer mediaPlayer) {
-        if(mediaPlayer != null) {
+        if(mediaPlayer != null && mProgressBarPlayer != null) {
             mediaPlayer.start();
+            mProgressBarPlayer.postDelayed(onEverySecond, 1000);
         }
     }
+
+    private Runnable onEverySecond = new Runnable() {
+        @Override
+        public void run(){
+            if(running){
+                if(mProgressBarPlayer != null) {
+                    DebugUtil.log("position: " + mPlayer.getCurrentPosition());
+                    mProgressBarPlayer.setProgress(mPlayer.getCurrentPosition());
+                }
+
+                if(mPlayer.isPlaying() && mProgressBarPlayer != null) {
+                    mProgressBarPlayer.postDelayed(onEverySecond, 1000);
+                }
+            }
+        }
+    };
+
 }
