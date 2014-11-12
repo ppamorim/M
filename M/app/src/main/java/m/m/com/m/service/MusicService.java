@@ -70,11 +70,18 @@ public class MusicService extends Service implements
         //set the data source
         try{
             mPlayer.setDataSource(getApplicationContext(), trackUri);
-        }
-        catch(Exception e){
+        } catch(Exception e) {
             Log.e("MUSIC SERVICE", "Error setting data source", e);
         }
         mPlayer.prepareAsync();
+    }
+
+    //play a song
+    public void pauseSong(){
+        if(mPlayer!= null && mPlayer.isPlaying()) {
+            mPlayer.pause();
+        }
+
     }
 
     //set the song

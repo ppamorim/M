@@ -9,13 +9,19 @@ import android.webkit.URLUtil;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import m.m.com.m.R;
+import m.m.com.m.core.service.AbstractService;
 import m.m.com.m.model.Song;
+import m.m.com.m.service.SamplePhotoService;
+import m.m.com.m.utils.DebugUtil;
+import m.m.com.m.utils.JsonMapper;
 
 public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
 
@@ -24,6 +30,8 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
     private Context mContext;
     private List<Song> mPhotoList = new ArrayList<Song>();
     private OnItemClick mOnItemClick;
+
+    private HashMap<Integer, Boolean> hasLoaded = new HashMap<Integer, Boolean>();
 
     public SongAdapter(Context context, List<Song> items, OnItemClick onItemClick, int screenSize) {
         mContext = context;
@@ -38,12 +46,7 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder viewHolder, final int position) {
-
-        ViewGroup.LayoutParams layoutParams = viewHolder.itemView.getLayoutParams();
-        layoutParams.height = mScreenSize/2;
-
-        viewHolder.itemView.setLayoutParams(layoutParams);
+    public void onBindViewHolder(final ViewHolder viewHolder, final int position) {
 
         final Song photo = mPhotoList.get(position);
 
@@ -61,12 +64,48 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
             String title = photo.getTitle();
 
 //            if(title != null && mContext != null) {
-//
-//                Picasso.with(mContext)
-//                        .load(image)
-//                        .into(viewHolder.photo);
-//
-//            }
+
+            try {
+
+                if(hasLoaded.get(position) == null) {
+
+                    hasLoaded.put(position, true);
+
+                    new SamplePhotoService(title, new AbstractService.OnRequestResponse() {
+                        @Override
+                        public void onSucess(String response) {
+                            DebugUtil.log("response: " + response);
+                            try {
+
+                                if(response != null) {
+
+                                    String url = new JsonMapper().readTree(response).get("responseData").get("results").get(0).get("url").toString();
+                                    String preparedUrl = url.substring(1, url.length() - 1);
+
+                                    if (URLUtil.isValidUrl(preparedUrl)) {
+                                        Picasso.with(mContext)
+                                                .load(preparedUrl)
+                                                .into(viewHolder.image);
+                                    }
+                                }
+
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+
+                        }
+
+                        @Override
+                        public void onFail(int error) {
+                            DebugUtil.log("response error: " + error);
+                        }
+                    });
+
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
             if(title != null) {
                 viewHolder.title.setText(title);
@@ -74,6 +113,10 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
                 viewHolder.title.setVisibility(View.GONE);
             }
         }
+
+        ViewGroup.LayoutParams layoutParams = viewHolder.itemView.getLayoutParams();
+        layoutParams.height = mScreenSize/2;
+        viewHolder.itemView.setLayoutParams(layoutParams);
 
     }
 
@@ -88,12 +131,16 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        public TextView title;
+        final public TextView title;
+        final public ImageView image;
+        final public String urlImage;
 
         public ViewHolder(View itemView) {
             super(itemView);
 
             title = (TextView) itemView.findViewById(R.id.title);
+            image = (ImageView) itemView.findViewById(R.id.image);
+            urlImage = null;
 
         }
 
