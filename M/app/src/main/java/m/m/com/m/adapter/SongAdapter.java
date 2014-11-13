@@ -65,6 +65,9 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
 
         if (song != null) {
 
+            if(viewHolder.time.getText().equals("")) {
+                viewHolder.time.setText(new StringBuilder("00:00 / ").append(convertToTime(song.getmDuration())));
+            }
             viewHolder.title.setText(new StringBuilder(song.getArtist()).append(" - ").append(song.getTitle()));
             viewHolder.itemView.setTag(position);
 
@@ -72,10 +75,12 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
                 @Override
                 public void onClick(View view) {
 
+
+
                     if(viewHolder.play.getVisibility() == View.VISIBLE) {
                         viewHolder.play.setVisibility(View.GONE);
                         viewHolder.pause.setVisibility(View.VISIBLE);
-                        mOnItemClick.onPlaySong(position, viewHolder.progressBar);
+                        mOnItemClick.onPlaySong(position, viewHolder.progressBar, viewHolder.time);
                     } else {
                         viewHolder.play.setVisibility(View.VISIBLE);
                         viewHolder.pause.setVisibility(View.GONE);
@@ -170,6 +175,7 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
     public static class ViewHolder extends RecyclerView.ViewHolder {
 
         final public TextView title;
+        final public TextView time;
 
         final public ImageView image;
         final public ImageView play;
@@ -182,6 +188,7 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
             super(itemView);
 
             title = (TextView) itemView.findViewById(R.id.title);
+            time = (TextView) itemView.findViewById(R.id.time);
 
             image = (ImageView) itemView.findViewById(R.id.image);
             play = (ImageView) itemView.findViewById(R.id.play);
@@ -194,8 +201,21 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
 
     }
 
+    private String convertToTime(int value) {
+
+        int dSeconds = (int) (value / 1000) % 60;
+        int dMinutes = (int) ((value / (1000 * 60)) % 60);
+        int dHours = (int) ((value / (1000 * 60 * 60)) % 24);
+
+        if (dHours == 0) {
+            return String.format("%02d:%02d", dMinutes, dSeconds);
+        } else {
+            return String.format("%02d:%02d:%02d", dHours, dMinutes, dSeconds);
+        }
+    }
+
     public static interface OnItemClick {
-        public void onPlaySong(int position, ProgressBar progressBar);
+        public void onPlaySong(int position, ProgressBar progressBar, TextView time);
         public void onPauseSong(ProgressBar progressBar);
         public void onResumeSong(ProgressBar progressBar);
     }

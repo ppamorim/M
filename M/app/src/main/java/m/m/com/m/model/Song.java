@@ -18,18 +18,48 @@ package m.m.com.m.model;
 
 public class Song {
 
-    private long id;
-    private String title;
-    private String artist;
+    private long mId;
+    private String mTitle;
+    private String mArtist;
+    private int mDuration;
 
-    public Song(long songID, String songTitle, String songArtist){
-        id=songID;
-        title=songTitle;
-        artist=songArtist;
+    public Song(long songID, String songTitle, String songArtist, int duration){
+        this.mId = songID;
+        this.mTitle = songTitle;
+        this.mArtist = songArtist;
+        this.mDuration = duration;
     }
 
-    public long getID(){return id;}
-    public String getTitle(){return title;}
-    public String getArtist(){return artist;}
+    public void setId(long id) {
+        this.mId = id;
+    }
+
+    public long getID(){
+        return mId;
+    }
+
+    public void setTitle(String title) {
+        this.mTitle = title;
+    }
+
+    public String getTitle(){
+        return mTitle;
+    }
+
+    public void setArtist(String artist) {
+        this.mArtist = artist;
+    }
+
+    public String getArtist() {
+        return mArtist;
+    }
+
+    public int getmDuration() {
+        return mDuration;
+    }
+
+    public void setmDuration(int mDuration) {
+        this.mDuration = mDuration;
+    }
 
 }

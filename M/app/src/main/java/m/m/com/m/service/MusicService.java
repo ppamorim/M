@@ -27,6 +27,7 @@ import android.os.IBinder;
 import android.os.PowerManager;
 import android.util.Log;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 
@@ -43,12 +44,14 @@ public class MusicService extends Service implements
     private MediaPlayer mPlayer;
     private final IBinder musicBind = new MusicBinder();
     private ProgressBar mProgressBarPlayer;
+    private TextView mTimeText;
 
     private int current = 0;
     private boolean running = true;
     private boolean canBePlayed = false;
     private int duration = 0;
     private int mRatioRefreshProgress = 50;
+    private int mRatioRefreshTime = 1000;
 
     public void onCreate() {
         super.onCreate();
@@ -84,6 +87,10 @@ public class MusicService extends Service implements
         mProgressBarPlayer = progressBar;
     }
 
+    public void setTimeSong(final TextView textView) {
+        mTimeText = textView;
+    }
+
     //play a song
     public void playSong(){
 
@@ -96,16 +103,10 @@ public class MusicService extends Service implements
             }
 
             canBePlayed = false;
-            //play
             mPlayer.reset();
-            //get song
-            Song playSong = mSongsList.get(mSongPosition);
-            //get id
-            long currSong = playSong.getID();
-            //set uri
             Uri trackUri = ContentUris.withAppendedId(
                     android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                    currSong);
+                    mSongsList.get(mSongPosition).getID());
             //set the data source
             try {
                 mPlayer.setDataSource(getApplicationContext(), trackUri);
@@ -164,24 +165,31 @@ public class MusicService extends Service implements
             canBePlayed = true;
             mediaPlayer.start();
             mProgressBarPlayer.setProgress(0);
-            mProgressBarPlayer.setMax(mPlayer.getDuration());
+            duration = mPlayer.getDuration();
+            mProgressBarPlayer.setMax(duration);
             updateProgressBar();
+            updateTimeText();
         }
     }
 
     private void updateProgressBar() {
         if(mProgressBarPlayer != null) {
-            mProgressBarPlayer.postDelayed(onEverySecond, mRatioRefreshProgress);
+            mProgressBarPlayer.postDelayed(onEveryMilisecond, mRatioRefreshProgress);
         }
     }
 
-    private Runnable onEverySecond = new Runnable() {
+    private void updateTimeText() {
+        if(mProgressBarPlayer != null) {
+            mProgressBarPlayer.postDelayed(onEverySecond, mRatioRefreshTime);
+        }
+    }
+
+    private Runnable onEveryMilisecond = new Runnable() {
         @Override
         public void run(){
             if(running){
                 if(mProgressBarPlayer != null) {
                     mProgressBarPlayer.setProgress(mPlayer.getCurrentPosition());
-
                 }
 
                 if(mPlayer.isPlaying() && mProgressBarPlayer != null) {
@@ -194,5 +202,51 @@ public class MusicService extends Service implements
             }
         }
     };
+
+    private Runnable onEverySecond = new Runnable() {
+        @Override
+        public void run() {
+            if(running){
+                if(mPlayer.isPlaying() && mProgressBarPlayer != null) {
+                    if(mPlayer.getCurrentPosition() < mPlayer.getDuration()) {
+                        updateTime();
+                    } else {
+                        mTimeText.setText("00:00 / 00:00");
+                    }
+                }
+            }
+        }
+    };
+
+    private void updateTime(){
+        do {
+            if(mPlayer != null && canBePlayed) {
+                current = mPlayer.getCurrentPosition();
+                int dSeconds = (int) (duration / 1000) % 60;
+                int dMinutes = (int) ((duration / (1000 * 60)) % 60);
+                int dHours = (int) ((duration / (1000 * 60 * 60)) % 24);
+
+                int cSeconds = (int) (current / 1000) % 60;
+                int cMinutes = (int) ((current / (1000 * 60)) % 60);
+                int cHours = (int) ((current / (1000 * 60 * 60)) % 24);
+
+                if (mTimeText != null) {
+                    if (dHours == 0) {
+                        mTimeText.setText(String.format("%02d:%02d / %02d:%02d", cMinutes, cSeconds, dMinutes, dSeconds));
+                    } else {
+                        mTimeText.setText(String.format("%02d:%02d:%02d / %02d:%02d:%02d", cHours, cMinutes, cSeconds, dHours, dMinutes, dSeconds));
+                    }
+                }
+
+                try {
+
+                    if (mProgressBarPlayer.getProgress() >= 100) {
+                        break;
+                    }
+                } catch (Exception e) {
+                }
+            }
+        }while (mProgressBarPlayer.getProgress() <= 100 && canBePlayed);
+    }
 
 }

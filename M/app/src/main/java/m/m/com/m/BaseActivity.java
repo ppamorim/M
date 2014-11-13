@@ -23,6 +23,7 @@ import android.content.ServiceConnection;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.provider.MediaStore;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -38,6 +39,7 @@ import android.content.Context;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import m.m.com.m.service.MusicService;
 
@@ -87,8 +89,9 @@ public class BaseActivity extends Activity {
 
     private SongAdapter.OnItemClick onItemClick = new SongAdapter.OnItemClick() {
         @Override
-        public void onPlaySong(int position, ProgressBar progressBar) {
+        public void onPlaySong(int position, ProgressBar progressBar, TextView time) {
             mMusicService.setSeekBar(progressBar);
+            mMusicService.setTimeSong(time);
             mMusicService.setSong(position);
             mMusicService.playSong();
         }
@@ -128,23 +131,26 @@ public class BaseActivity extends Activity {
         //query external audio
 
         Cursor musicCursor = getContentResolver().query(android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, null, null, null, null);
-        //iterate over results if valid
-        if(musicCursor!=null && musicCursor.moveToFirst()){
-            //get columns
+
+        if(musicCursor != null && musicCursor.moveToFirst()){
+
             int titleColumn = musicCursor.getColumnIndex
                     (android.provider.MediaStore.Audio.Media.TITLE);
             int idColumn = musicCursor.getColumnIndex
                     (android.provider.MediaStore.Audio.Media._ID);
             int artistColumn = musicCursor.getColumnIndex
                     (android.provider.MediaStore.Audio.Media.ARTIST);
-            //add songs to list
+            int durationColumn = musicCursor.getColumnIndex(android.provider.MediaStore.Audio.Media.DURATION);
+
             do {
+
                 long thisId = musicCursor.getLong(idColumn);
                 String thisTitle = musicCursor.getString(titleColumn);
                 String thisArtist = musicCursor.getString(artistColumn);
-                mSongList.add(new Song(thisId, thisTitle, thisArtist));
-            }
-            while (musicCursor.moveToNext());
+                int duration = musicCursor.getInt(durationColumn);
+                mSongList.add(new Song(thisId, thisTitle, thisArtist, duration));
+
+            } while (musicCursor.moveToNext());
         }
     }
 
