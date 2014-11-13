@@ -9,8 +9,8 @@ Why? We hate iOS.
 Want to help?
 =============
 
-File new issues to discuss specific aspects of the API and to propose new
-features.
+Want to help ? Take a fork and then contact me :)
+My email is associated with my Github account.
 
 License
 =======
