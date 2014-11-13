@@ -65,6 +65,7 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
 
         if (song != null) {
 
+            viewHolder.title.setText(new StringBuilder(song.getArtist()).append(" - ").append(song.getTitle()));
             viewHolder.itemView.setTag(position);
 
             viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
