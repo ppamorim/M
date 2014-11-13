@@ -9,7 +9,7 @@ Why? We hate iOS.
 Want to help?
 =============
 
-Want to help ? Take a fork and then contact me :)
+Want to help ? Do a fork and then contact me :)
 My email is associated with my Github account.
 
 License
