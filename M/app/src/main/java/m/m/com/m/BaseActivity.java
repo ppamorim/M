@@ -40,7 +40,6 @@ import android.view.WindowManager;
 import android.widget.ProgressBar;
 
 import m.m.com.m.service.MusicService;
-import m.m.com.m.service.MusicService.MusicBinder;
 
 public class BaseActivity extends Activity {
 
@@ -48,13 +47,12 @@ public class BaseActivity extends Activity {
     private RecyclerView.LayoutManager mRecyclerLayoutManager;
     private SongAdapter mSongAdapter;
 
-    private ArrayList<Song> songList;
+    private ArrayList<Song> mSongList = new ArrayList<Song>();
 
-    //service
-    private MusicService musicSrv;
-    private Intent playIntent;
-    //binding
-    private boolean musicBound=false;
+    private MusicService mMusicService;
+    private Intent mPlayIntent;
+
+    private boolean mMusicBound = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,36 +63,46 @@ public class BaseActivity extends Activity {
         mRecyclerLayoutManager = new GridLayoutManager(this, 2);
         mRecyclerView.setLayoutManager(mRecyclerLayoutManager);
 
-        //instantiate list
-        songList = new ArrayList<Song>();
-        //get songs from device
         getSongList();
-        //sort alphabetically by title
-        Collections.sort(songList, new Comparator<Song>() {
+
+        Collections.sort(mSongList, new Comparator<Song>() {
             public int compare(Song a, Song b) {
                 return a.getTitle().compareTo(b.getTitle());
             }
         });
 
-        int screen_width = getResources().getDisplayMetrics().widthPixels;
+        int ScreenWidth = getResources().getDisplayMetrics().widthPixels;
         if(android.os.Build.VERSION.SDK_INT >= 13) {
-            screen_width = ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getWidth();
+            ScreenWidth = ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getWidth();
         }
 
         //create and set adapter
-        SongAdapter songAdt = new SongAdapter(this, songList, new SongAdapter.OnItemClick() {
-            @Override
-            public void onItemClick(int position, ProgressBar progressBar) {
-                musicSrv.setSeekBar(progressBar);
-                musicSrv.setSong(position);
-                musicSrv.playSong();
-            }
-        }, screen_width);
+        SongAdapter songAdt = new SongAdapter(this, mSongList, onItemClick, ScreenWidth);
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mRecyclerView.setAdapter(songAdt);
 
+
     }
+
+    private SongAdapter.OnItemClick onItemClick = new SongAdapter.OnItemClick() {
+        @Override
+        public void onPlaySong(int position, ProgressBar progressBar) {
+            mMusicService.setSeekBar(progressBar);
+            mMusicService.setSong(position);
+            mMusicService.playSong();
+        }
+
+        @Override
+        public void onPauseSong(ProgressBar progressBar) {
+            mMusicService.pauseSong(progressBar);
+        }
+
+        @Override
+        public void onResumeSong(ProgressBar progressBar) {
+
+        }
+    };
 
     //connect to the service
     private ServiceConnection musicConnection = new ServiceConnection(){
@@ -103,15 +111,15 @@ public class BaseActivity extends Activity {
         public void onServiceConnected(ComponentName name, IBinder service) {
             MusicService.MusicBinder binder = (MusicService.MusicBinder)service;
             //get service
-            musicSrv = binder.getService();
+            mMusicService = binder.getService();
             //pass list
-            musicSrv.setListSongs(songList);
-            musicBound = true;
+            mMusicService.setListSongs(mSongList);
+            mMusicBound = true;
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-            musicBound = false;
+            mMusicBound = false;
         }
     };
 
@@ -134,7 +142,7 @@ public class BaseActivity extends Activity {
                 long thisId = musicCursor.getLong(idColumn);
                 String thisTitle = musicCursor.getString(titleColumn);
                 String thisArtist = musicCursor.getString(artistColumn);
-                songList.add(new Song(thisId, thisTitle, thisArtist));
+                mSongList.add(new Song(thisId, thisTitle, thisArtist));
             }
             while (musicCursor.moveToNext());
         }
@@ -144,24 +152,24 @@ public class BaseActivity extends Activity {
     @Override
     protected void onStart() {
         super.onStart();
-        if(playIntent==null){
-            playIntent = new Intent(this, MusicService.class);
-            bindService(playIntent, musicConnection, Context.BIND_AUTO_CREATE);
-            startService(playIntent);
+        if(mPlayIntent ==null){
+            mPlayIntent = new Intent(this, MusicService.class);
+            bindService(mPlayIntent, musicConnection, Context.BIND_AUTO_CREATE);
+            startService(mPlayIntent);
         }
     }
 
     @Override
     protected void onDestroy() {
-        stopService(playIntent);
-        musicSrv=null;
+        stopService(mPlayIntent);
+        mMusicService =null;
         super.onDestroy();
     }
 
     //user song select
     public void songPicked(View view){
-        musicSrv.setSong(Integer.parseInt(view.getTag().toString()));
-        musicSrv.playSong();
+        mMusicService.setSong(Integer.parseInt(view.getTag().toString()));
+        mMusicService.playSong();
     }
 
 }

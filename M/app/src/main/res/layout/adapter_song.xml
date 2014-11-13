@@ -37,6 +37,21 @@
         android:scaleType="centerCrop"
         android:src="@drawable/adapter_background"/>
 
+    <ImageView
+        android:id="@+id/play"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_centerInParent="true"
+        android:src="@drawable/player"/>
+
+    <ImageView
+        android:id="@+id/pause"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:visibility="gone"
+        android:layout_centerInParent="true"
+        android:src="@drawable/pause"/>
+
     <ProgressBar
         android:id="@+id/progress_bar"
         android:layout_width="match_parent"

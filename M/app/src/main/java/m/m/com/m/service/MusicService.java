@@ -46,7 +46,9 @@ public class MusicService extends Service implements
 
     private int current = 0;
     private boolean running = true;
+    private boolean canBePlayed = false;
     private int duration = 0;
+    private int mRatioRefreshProgress = 50;
 
     public void onCreate() {
         super.onCreate();
@@ -84,28 +86,41 @@ public class MusicService extends Service implements
 
     //play a song
     public void playSong(){
-        //play
-        mPlayer.reset();
-        //get song
-        Song playSong = mSongsList.get(mSongPosition);
-        //get id
-        long currSong = playSong.getID();
-        //set uri
-        Uri trackUri = ContentUris.withAppendedId(
-                android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                currSong);
-        //set the data source
-        try{
-            mPlayer.setDataSource(getApplicationContext(), trackUri);
-        } catch(Exception e) {
-            Log.e("MUSIC SERVICE", "Error setting data source", e);
+
+        if(mPlayer != null) {
+
+            if (canBePlayed) {
+                mPlayer.start();
+                updateProgressBar();
+                return;
+            }
+
+            canBePlayed = false;
+            //play
+            mPlayer.reset();
+            //get song
+            Song playSong = mSongsList.get(mSongPosition);
+            //get id
+            long currSong = playSong.getID();
+            //set uri
+            Uri trackUri = ContentUris.withAppendedId(
+                    android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                    currSong);
+            //set the data source
+            try {
+                mPlayer.setDataSource(getApplicationContext(), trackUri);
+            } catch (Exception e) {
+                Log.e("MUSIC SERVICE", "Error setting data source", e);
+            }
+            mPlayer.prepareAsync();
         }
-        mPlayer.prepareAsync();
     }
 
     //play a song
-    public void pauseSong(){
+    public void pauseSong(ProgressBar progressBar){
         if(mPlayer!= null && mPlayer.isPlaying()) {
+            progressBar.setMax(mPlayer.getDuration());
+            progressBar.setProgress(mPlayer.getCurrentPosition());
             mPlayer.pause();
         }
 
@@ -113,7 +128,10 @@ public class MusicService extends Service implements
 
     //set the song
     public void setSong(int songIndex){
-        mSongPosition = songIndex;
+        if(mSongPosition != songIndex) {
+            canBePlayed = false;
+            mSongPosition = songIndex;
+        }
     }
 
     @Override
@@ -143,29 +161,32 @@ public class MusicService extends Service implements
     @Override
     public void onPrepared(MediaPlayer mediaPlayer) {
         if(mediaPlayer != null && mProgressBarPlayer != null) {
+            canBePlayed = true;
             mediaPlayer.start();
             mProgressBarPlayer.setProgress(0);
             mProgressBarPlayer.setMax(mPlayer.getDuration());
-            mProgressBarPlayer.postDelayed(onEverySecond, 500);
+            updateProgressBar();
         }
     }
 
-
+    private void updateProgressBar() {
+        if(mProgressBarPlayer != null) {
+            mProgressBarPlayer.postDelayed(onEverySecond, mRatioRefreshProgress);
+        }
+    }
 
     private Runnable onEverySecond = new Runnable() {
         @Override
         public void run(){
             if(running){
                 if(mProgressBarPlayer != null) {
-                    DebugUtil.log("position: " + mPlayer.getCurrentPosition());
                     mProgressBarPlayer.setProgress(mPlayer.getCurrentPosition());
 
                 }
 
                 if(mPlayer.isPlaying() && mProgressBarPlayer != null) {
-                    DebugUtil.log("Progress: " + mProgressBarPlayer.getProgress());
                     if(mPlayer.getCurrentPosition() < mPlayer.getDuration()) {
-                        mProgressBarPlayer.postDelayed(onEverySecond, 500);
+                        updateProgressBar();
                     } else {
                         mProgressBarPlayer.setProgress(0);
                     }
