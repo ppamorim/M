@@ -39,6 +39,7 @@ import android.content.Context;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ProgressBar;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import m.m.com.m.service.MusicService;
@@ -89,21 +90,26 @@ public class BaseActivity extends Activity {
 
     private SongAdapter.OnItemClick onItemClick = new SongAdapter.OnItemClick() {
         @Override
-        public void onPlaySong(int position, ProgressBar progressBar, TextView time) {
-            mMusicService.setSeekBar(progressBar);
+        public void onPlaySong(int position, SeekBar seekBar, TextView time) {
+            mMusicService.setSeekBar(seekBar);
             mMusicService.setTimeSong(time);
             mMusicService.setSong(position);
             mMusicService.playSong();
         }
 
         @Override
-        public void onPauseSong(ProgressBar progressBar) {
-            mMusicService.pauseSong(progressBar);
+        public void onPauseSong(SeekBar seekBar) {
+            mMusicService.pauseSong(seekBar);
         }
 
         @Override
-        public void onResumeSong(ProgressBar progressBar) {
+        public void onResumeSong(SeekBar seekBar) {
 
+        }
+
+        @Override
+        public void onSeekBarScroll(int progress) {
+            mMusicService.seekTo(progress);
         }
     };
 

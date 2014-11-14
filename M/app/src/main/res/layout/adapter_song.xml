@@ -28,25 +28,11 @@
         android:scaleType="centerCrop"
         android:src="@drawable/adapter_background"/>
 
-    <ImageView
-        android:id="@+id/play"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
-        android:layout_centerInParent="true"
-        android:src="@drawable/player"/>
-
-    <ImageView
-        android:id="@+id/pause"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
-        android:visibility="gone"
-        android:layout_centerInParent="true"
-        android:src="@drawable/pause"/>
-
     <com.github.leonardoxh.customfont.FontText
         android:id="@+id/time"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:textColor="@color/pure_black"
         android:layout_alignParentBottom="true"
         android:textSize="12sp"
         android:padding="8dp"
@@ -56,18 +42,25 @@
         android:id="@+id/title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textColor="@color/black"
+        android:textColor="@color/pure_black"
         android:layout_alignParentTop="true"
         android:textSize="12sp"
         android:padding="8dp"
         android:gravity="start"/>
 
-    <ProgressBar
+    <m.m.com.m.core.view.CustomSeekBar
         android:id="@+id/progress_bar"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:indeterminate="false"
-        android:indeterminateOnly="false"
         style="@style/CustomProgressBarHorizontal"/>
+
+    <ImageView
+        android:id="@+id/status"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_centerInParent="true"
+        android:focusable="false"
+        android:src="@drawable/player"/>
+
 
 </RelativeLayout>

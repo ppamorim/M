@@ -17,13 +17,16 @@
 package m.m.com.m.adapter;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -31,6 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import m.m.com.m.R;
+import m.m.com.m.core.view.CustomSeekBar;
 import m.m.com.m.model.Song;
 import m.m.com.m.service.GetAlbumCover;
 
@@ -44,11 +48,18 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
 
     private HashMap<Integer, Boolean> hasLoaded = new HashMap<Integer, Boolean>();
 
+    private Drawable mPlayDrawable;
+    private Drawable mPauseDrawable;
+
     public SongAdapter(Context context, List<Song> items, OnItemClick onItemClick, int screenSize) {
         mContext = context;
         mScreenSize = screenSize;
         mSongsList.addAll(items);
         mOnItemClick = onItemClick;
+
+        final Resources resources =  mContext.getResources();
+        mPlayDrawable = resources.getDrawable(R.drawable.player);
+        mPauseDrawable = resources.getDrawable(R.drawable.pause);
     }
 
     @Override
@@ -71,20 +82,34 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
             viewHolder.title.setText(new StringBuilder(song.getArtist()).append(" - ").append(song.getTitle()));
             viewHolder.itemView.setTag(position);
 
-            viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
+            viewHolder.seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+
+                @Override
+                public void onStopTrackingTouch(SeekBar seekBar) {
+                }
+
+                @Override
+                public void onStartTrackingTouch(SeekBar seekBar) {
+                }
+
+                @Override
+                public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                    if (fromUser) {
+                        mOnItemClick.onSeekBarScroll(progress);
+                    }
+                }
+            });
+
+            viewHolder.status.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
 
-
-
-                    if(viewHolder.play.getVisibility() == View.VISIBLE) {
-                        viewHolder.play.setVisibility(View.GONE);
-                        viewHolder.pause.setVisibility(View.VISIBLE);
-                        mOnItemClick.onPlaySong(position, viewHolder.progressBar, viewHolder.time);
+                    if(viewHolder.status.getDrawable() == mPlayDrawable) {
+                        viewHolder.status.setImageDrawable(mPauseDrawable);
+                        mOnItemClick.onPlaySong(position, viewHolder.seekBar, viewHolder.time);
                     } else {
-                        viewHolder.play.setVisibility(View.VISIBLE);
-                        viewHolder.pause.setVisibility(View.GONE);
-                        mOnItemClick.onPauseSong(viewHolder.progressBar);
+                        viewHolder.status.setImageDrawable(mPlayDrawable);
+                        mOnItemClick.onPauseSong(viewHolder.seekBar);
                     }
                 }
             });
@@ -154,11 +179,11 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
         }
 
         ViewGroup.LayoutParams layoutParams = viewHolder.itemView.getLayoutParams();
-        ViewGroup.LayoutParams layoutParamsProgressBar = viewHolder.progressBar.getLayoutParams();
+        ViewGroup.LayoutParams layoutParamsProgressBar = viewHolder.seekBar.getLayoutParams();
         layoutParams.height = mScreenSize/2;
         layoutParamsProgressBar.height = mScreenSize/2;
         viewHolder.itemView.setLayoutParams(layoutParams);
-        viewHolder.progressBar.setLayoutParams(layoutParamsProgressBar);
+        viewHolder.seekBar.setLayoutParams(layoutParamsProgressBar);
 
     }
 
@@ -178,10 +203,9 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
         final public TextView time;
 
         final public ImageView image;
-        final public ImageView play;
-        final public ImageView pause;
+        final public ImageView status;
 
-        final public ProgressBar progressBar;
+        final public CustomSeekBar seekBar;
         final public String urlImage;
 
         public ViewHolder(View itemView) {
@@ -191,10 +215,9 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
             time = (TextView) itemView.findViewById(R.id.time);
 
             image = (ImageView) itemView.findViewById(R.id.image);
-            play = (ImageView) itemView.findViewById(R.id.play);
-            pause = (ImageView) itemView.findViewById(R.id.pause);
+            status = (ImageView) itemView.findViewById(R.id.status);
 
-            progressBar = (ProgressBar) itemView.findViewById(R.id.progress_bar);
+            seekBar = (CustomSeekBar) itemView.findViewById(R.id.progress_bar);
             urlImage = null;
 
         }
@@ -215,9 +238,10 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
     }
 
     public static interface OnItemClick {
-        public void onPlaySong(int position, ProgressBar progressBar, TextView time);
-        public void onPauseSong(ProgressBar progressBar);
-        public void onResumeSong(ProgressBar progressBar);
+        public void onPlaySong(int position, SeekBar seekBar, TextView time);
+        public void onSeekBarScroll(int progress);
+        public void onPauseSong(SeekBar seekBar);
+        public void onResumeSong(SeekBar seekBar);
     }
 
 }

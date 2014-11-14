@@ -27,6 +27,7 @@ import android.os.IBinder;
 import android.os.PowerManager;
 import android.util.Log;
 import android.widget.ProgressBar;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -43,7 +44,7 @@ public class MusicService extends Service implements
 
     private MediaPlayer mPlayer;
     private final IBinder musicBind = new MusicBinder();
-    private ProgressBar mProgressBarPlayer;
+    private SeekBar mProgressBarPlayer;
     private TextView mTimeText;
 
     private int current = 0;
@@ -83,8 +84,8 @@ public class MusicService extends Service implements
         }
     }
 
-    public void setSeekBar(ProgressBar progressBar) {
-        mProgressBarPlayer = progressBar;
+    public void setSeekBar(SeekBar seekbar) {
+        mProgressBarPlayer = seekbar;
     }
 
     public void setTimeSong(final TextView textView) {
@@ -132,6 +133,12 @@ public class MusicService extends Service implements
         if(mSongPosition != songIndex) {
             canBePlayed = false;
             mSongPosition = songIndex;
+        }
+    }
+
+    public void seekTo(int value) {
+        if(mPlayer != null) {
+            mPlayer.seekTo(value);
         }
     }
 

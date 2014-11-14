@@ -20,8 +20,9 @@
     <color name="black_transpent">#801C1C1C</color>
 
     <!-- Opaque colors -->
+    <color name="pure_black">#000000</color>
     <color name="black">#1C1C1C</color>
-    <color name="black_halftone">#333333</color>
+    <color name="black_halftone">#383838</color>
     <color name="white">#FFFFFF</color>
 
 </resources>
