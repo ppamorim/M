@@ -179,11 +179,8 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
         }
 
         ViewGroup.LayoutParams layoutParams = viewHolder.itemView.getLayoutParams();
-        ViewGroup.LayoutParams layoutParamsProgressBar = viewHolder.seekBar.getLayoutParams();
         layoutParams.height = mScreenSize/2;
-        layoutParamsProgressBar.height = mScreenSize/2;
         viewHolder.itemView.setLayoutParams(layoutParams);
-        viewHolder.seekBar.setLayoutParams(layoutParamsProgressBar);
 
     }
 
@@ -241,7 +238,6 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
         public void onPlaySong(int position, SeekBar seekBar, TextView time);
         public void onSeekBarScroll(int progress);
         public void onPauseSong(SeekBar seekBar);
-        public void onResumeSong(SeekBar seekBar);
     }
 
 }

@@ -66,9 +66,6 @@
 
     <style name="CustomProgressBarHorizontal" parent="android:Widget.SeekBar">
         <item name="android:progressDrawable">@drawable/adapter_progressbar</item>
-        <item name="android:minHeight">100dip</item>
-        <item name="android:maxHeight">200dip</item>
-        <item name="android:thumbOffset">-1px</item>
     </style>
 
 </resources>

@@ -39,16 +39,15 @@ public class CustomSeekBar extends SeekBar {
     }
 
     @Override
-    public void setThumbOffset(int thumbOffset) {
-        super.setThumbOffset(0);
-    }
-
-    @Override
     public boolean onTouchEvent(MotionEvent event) {
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
 
 //            if(mThumb.getBounds().contains((int)event.getX(), (int)event.getY())) {
-            if (event.getX() >= (mThumb.getBounds().left)*2 && event.getX() <= (mThumb.getBounds().right)*2 && mCanBeScrolled) {
+            if (event.getX() >= mThumb.getBounds().left*2
+                    && event.getX() <= mThumb.getBounds().right*2
+                    && event.getY() <= mThumb.getBounds().bottom*2
+                    && event.getY() >= mThumb.getBounds().top*2) {
+
 
                 super.onTouchEvent(event);
             } else {

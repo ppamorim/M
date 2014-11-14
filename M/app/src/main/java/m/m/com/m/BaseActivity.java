@@ -23,7 +23,6 @@ import android.content.ServiceConnection;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.provider.MediaStore;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -38,13 +37,17 @@ import m.m.com.m.model.Song;
 import android.content.Context;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-import m.m.com.m.service.MusicService;
+import m.m.com.m.notification.SongController;
+import m.m.com.m.service.internal.MediaService;
+import m.m.com.m.service.internal.MusicService;
 
 public class BaseActivity extends Activity {
+
+    //Verify if service is running
+    private boolean mMusicBound = false;
 
     private RecyclerView mRecyclerView;
     private RecyclerView.LayoutManager mRecyclerLayoutManager;
@@ -55,37 +58,43 @@ public class BaseActivity extends Activity {
     private MusicService mMusicService;
     private Intent mPlayIntent;
 
-    private boolean mMusicBound = false;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_base);
-
         mRecyclerView = (RecyclerView) findViewById(R.id.recycler_list);
+    }
+
+    @Override
+    protected void onPostCreate(Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+
         mRecyclerLayoutManager = new GridLayoutManager(this, 2);
         mRecyclerView.setLayoutManager(mRecyclerLayoutManager);
 
         getSongList();
 
-        Collections.sort(mSongList, new Comparator<Song>() {
-            public int compare(Song a, Song b) {
-                return a.getTitle().compareTo(b.getTitle());
-            }
-        });
-
-        int ScreenWidth = getResources().getDisplayMetrics().widthPixels;
-        if(android.os.Build.VERSION.SDK_INT >= 13) {
-            ScreenWidth = ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getWidth();
-        }
-
-        //create and set adapter
-        SongAdapter songAdt = new SongAdapter(this, mSongList, onItemClick, ScreenWidth);
+        mSongAdapter = new SongAdapter(this, mSongList, onItemClick, getScreenSize());
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
-        mRecyclerView.setAdapter(songAdt);
+        mRecyclerView.setAdapter(mSongAdapter);
+    }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if(mPlayIntent ==null){
+            mPlayIntent = new Intent(this, MusicService.class);
+            bindService(mPlayIntent, musicConnection, Context.BIND_AUTO_CREATE);
+            startService(mPlayIntent);
+        }
+    }
 
+    @Override
+    protected void onDestroy() {
+        stopService(mPlayIntent);
+        mMusicService =null;
+        super.onDestroy();
     }
 
     private SongAdapter.OnItemClick onItemClick = new SongAdapter.OnItemClick() {
@@ -95,6 +104,7 @@ public class BaseActivity extends Activity {
             mMusicService.setTimeSong(time);
             mMusicService.setSong(position);
             mMusicService.playSong();
+            new SongController(getBaseContext());
         }
 
         @Override
@@ -103,17 +113,11 @@ public class BaseActivity extends Activity {
         }
 
         @Override
-        public void onResumeSong(SeekBar seekBar) {
-
-        }
-
-        @Override
         public void onSeekBarScroll(int progress) {
             mMusicService.seekTo(progress);
         }
     };
 
-    //connect to the service
     private ServiceConnection musicConnection = new ServiceConnection(){
 
         @Override
@@ -132,56 +136,22 @@ public class BaseActivity extends Activity {
         }
     };
 
-    //method to retrieve song info from device
+    public int getScreenSize() {
+        int screenWidth = getResources().getDisplayMetrics().widthPixels;
+        if(android.os.Build.VERSION.SDK_INT >= 13) {
+            screenWidth = ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getWidth();
+        }
+        return screenWidth;
+    }
+
     public void getSongList(){
-        //query external audio
+        mSongList = new MediaService(getContentResolver()).getAllMusics();
 
-        Cursor musicCursor = getContentResolver().query(android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, null, null, null, null);
-
-        if(musicCursor != null && musicCursor.moveToFirst()){
-
-            int titleColumn = musicCursor.getColumnIndex
-                    (android.provider.MediaStore.Audio.Media.TITLE);
-            int idColumn = musicCursor.getColumnIndex
-                    (android.provider.MediaStore.Audio.Media._ID);
-            int artistColumn = musicCursor.getColumnIndex
-                    (android.provider.MediaStore.Audio.Media.ARTIST);
-            int durationColumn = musicCursor.getColumnIndex(android.provider.MediaStore.Audio.Media.DURATION);
-
-            do {
-
-                long thisId = musicCursor.getLong(idColumn);
-                String thisTitle = musicCursor.getString(titleColumn);
-                String thisArtist = musicCursor.getString(artistColumn);
-                int duration = musicCursor.getInt(durationColumn);
-                mSongList.add(new Song(thisId, thisTitle, thisArtist, duration));
-
-            } while (musicCursor.moveToNext());
-        }
-    }
-
-    //start and bind the service when the activity starts
-    @Override
-    protected void onStart() {
-        super.onStart();
-        if(mPlayIntent ==null){
-            mPlayIntent = new Intent(this, MusicService.class);
-            bindService(mPlayIntent, musicConnection, Context.BIND_AUTO_CREATE);
-            startService(mPlayIntent);
-        }
-    }
-
-    @Override
-    protected void onDestroy() {
-        stopService(mPlayIntent);
-        mMusicService =null;
-        super.onDestroy();
-    }
-
-    //user song select
-    public void songPicked(View view){
-        mMusicService.setSong(Integer.parseInt(view.getTag().toString()));
-        mMusicService.playSong();
+        Collections.sort(mSongList, new Comparator<Song>() {
+            public int compare(Song a, Song b) {
+                return a.getTitle().compareTo(b.getTitle());
+            }
+        });
     }
 
 }
